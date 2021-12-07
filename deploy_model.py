@@ -1,17 +1,19 @@
 from flask import Flask, jsonify, request
 import pandas as pd
-from joblib import load
+import numpy as np
+import keras
+import cv2
 
 app = Flask(__name__)
 
-model = load('model/model.joblib')
+model = keras.models.load_model('model/resnet50')
 
 @app.route('/predict', methods=['POST'])
-def predict(): # à modifier
- payload = request.get_json()
- input_df = pd.DataFrame(payload)
- input_df.fillna(-1, inplace=True)
- prediction = model.predict_proba(input_df)
+def predict():
+ image = request.files.get('image')
+ image = cv2.resize(image, (224, 224))
+ image = np.array(image)
+ prediction = model.predict(image)
  return jsonify({'prediction': prediction.tolist()})
 
 
